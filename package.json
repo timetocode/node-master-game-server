@@ -1,0 +1,9 @@
+{
+  "name": "game master server",
+  "version": "0.1.0",
+  "author": "timetocode // Alex Bennett",
+  "description": "master server example",
+  "dependencies": {
+      "express": "4.14.0"
+  }
+}
