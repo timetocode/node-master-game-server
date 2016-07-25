@@ -1,5 +1,5 @@
 # node-master-game-server
-A master server that maintains a list of other active servers. MasterServer.js is the main master server, and GameServerClient.js is a component that game servers can use to list themselves with the master server.
+A master server that maintains a list of active game servers. GameServerClient.js is a component that game servers can use to list themselves with the master server.
 
 ## Running the example
 1. Run exampleMaster.js, this is a master server.
