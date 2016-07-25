@@ -4,7 +4,7 @@ var GameServer = require('./GameServer')
 var JSONStream = require('json-stream')
 
 var id = 0
-var gameServerPassword = 'kitaaty'
+var gameServerPassword = 'kitty'
 
 // master server, tracks running game servers, provides servers list via http api
 function MasterServer(ip, tcpPort, httpPort) {
