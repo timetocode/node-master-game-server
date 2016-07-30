@@ -1,9 +1,10 @@
 {
-  "name": "game master server",
+  "name": "game-master-server",
   "version": "0.1.0",
   "author": "timetocode // Alex Bennett",
   "description": "master server example",
   "dependencies": {
-      "express": "4.14.0"
+      "express": "4.14.0",
+      "public-ip": "2.0.1"
   }
 }

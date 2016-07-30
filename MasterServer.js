@@ -1,12 +1,12 @@
 var net = require('net')
 var express = require('express')
-var GameServer = require('./GameServer')
+var GameServerListing = require('./GameServerListing')
 var JSONStream = require('json-stream')
 
 var id = 0
-var gameServerPassword = 'kitty'
+var gameServerPassword = 'kitty' // pick a password
 
-// master server, tracks running game servers, provides servers list via http api
+// master server: tracks running game servers, provides servers list via http json api
 function MasterServer(ip, tcpPort, httpPort) {
     this.gameServers = []
 
@@ -28,21 +28,21 @@ MasterServer.prototype._createTCPServer = function(ip, tcpPort) {
         var stream = JSONStream()
         socket.pipe(stream)
 
-        var gameServer = new GameServer(socket)
+        var gameServer = new GameServerListing(socket)
 
         stream.on('data', function(message) {
-            console.log('message', message)
-            // the authentication message. Has a password and a port
+            // the authentication message. Has a password, ip, and port from the game server
             if (typeof message.password !== 'undefined') {
                 if (isValidPassword(message.password) && typeof message.port !== 'undefined') {
-                    self._registerServer(gameServer, message.port)
-                    socket.write(JSON.stringify({authenticated: true}) + '\n')
+                    self._registerServer(gameServer, message.externalIP, message.port)
+                    // delimiting json messages with \n is a requirement of JSONStream
+                    self.send(socket, { authenticated: true })
                 } else {
                     if (!isValidPassword(message.password)) {
-                        socket.write(JSON.stringify({message: 'incorrect password'}) + '\n')
+                        self.send(socket, { message: 'incorrect password' })
                     }
                     if (typeof message.port === 'undefined') {
-                        socket.write(JSON.stringify({message: 'no game server port specified'}) + '\n')
+                        self.send(socket, { message: 'no game server port specified' })
                     }
                     socket.destroy()
                     return
@@ -78,8 +78,14 @@ MasterServer.prototype._removeServer = function(gameServer) {
     }
 }
 
-MasterServer.prototype._registerServer = function(gameServer, port) {
+MasterServer.prototype.send = function(socket, message) {
+    // delimiting json messages with \n is a requirement of JSONStream
+    socket.write(JSON.stringify(message) + '\n')
+}
+
+MasterServer.prototype._registerServer = function(gameServer, externalIP, port) {
     gameServer.isAuthenticated = true
+    gameServer.ip = externalIP
     gameServer.port = port
     gameServer.id = id++
     this.gameServers.push(gameServer)
@@ -94,7 +100,7 @@ MasterServer.prototype._receiveUpdate = function(gameServer, gameState, currentP
 
 // see https://nodejs.org/api/tls.html for less hacky security
 var isValidPassword = function(password) {
-    return password === gameServerPassword // pick your own password
+    return password === gameServerPassword
 }
 
 MasterServer.prototype.getServers = function() {
@@ -118,7 +124,6 @@ MasterServer.prototype.getServers = function() {
         if (typeof gameServer.maxPlayers !== 'undefined') {
             serverDescription.maxPlayers = gameServer.maxPlayers
         }
-
         if (typeof gameServer.gameState !== 'undefined') {
             serverDescription.gameState = gameServer.gameState
         }
@@ -130,15 +135,21 @@ MasterServer.prototype.getServers = function() {
 }
 
 MasterServer.prototype._createHTTPServer = function(port) {
-    var app = express()
     var self = this
 
-    app.get('/', function (req, res) {
+    var app = express()
+    app.use(function(req, res, next) {
+        res.header('Access-Control-Allow-Origin', '*')
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+        next()
+    })
+    
+    app.get('/servers', function (req, res) {
         res.send(JSON.stringify(self.getServers()))
     })
 
     app.listen(port, function () {
-        console.log('MasterServer HTTP api running on', 'http://' + self.ip + ':' + port )
+        console.log('MasterServer HTTP api running on', 'http://' + self.ip + ':' + port + '/servers' )
     })
 
     return app

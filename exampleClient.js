@@ -1,24 +1,42 @@
 
+var publicIp = require('public-ip')
+
 var GameServerClient = require('./GameServerClient')
-var GameState = require('./GameState')
+var MatchState = require('./MatchState')
 
-// made up data for this client
-var websocketPort = 8001
+var password = 'kitty'
+var masterServerIP = 'localhost' // or mygame.com, or 123.123.123.123
+var masterServerPort = 1337
 
-var gameServerClient = new GameServerClient(websocketPort)
-gameServerClient.connect(1337, '127.0.0.1', 'kitty', function() {
-    gameServerClient.send({
-        gameState: GameState.Lobby, 
-        currentPlayers: 6,
-        maxPlayers: 40
-    })
+// Start a game with a websocket server (not shown in this demo) then use this component to
+// connect to the master server 
 
-    // example: changing the gameServer's information 5 seconds after connecting
-    setTimeout(function() {
+// NOTE: if you pass a port of 0 to a websocket server the os will assign it a port
+// and then you can get that assigned port via websocketServer.address().port
+// this example just makes up a port and doesn't use it.
+var websocketPort = 8888    
+
+// lookup our externalIP
+publicIp.v4().then(function(externalIP) {
+
+    // list ourselves with the master server
+    var gameServerClient = new GameServerClient(externalIP, websocketPort, password)
+    gameServerClient.connect(masterServerPort, masterServerIP, function() {
         gameServerClient.send({
-            gameState: GameState.MatchInProgress, 
-            currentPlayers: 39,
-            maxPlayers: 40
+            gameState: MatchState.Lobby, // making up data
+            currentPlayers: 6, // making up data
+            maxPlayers: 40 // making up data
         })
-    }, 5000)
+
+        // example: changing this gameServer's information 10 seconds after starting
+        /*
+        setTimeout(function() {
+            gameServerClient.send({
+                gameState: MatchState.MatchInProgress, 
+                currentPlayers: 39,
+                maxPlayers: 40
+            })
+        }, 10000)
+        */
+    })
 })

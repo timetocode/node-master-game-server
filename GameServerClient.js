@@ -2,28 +2,28 @@ var net = require('net')
 var JSONStream = require('json-stream')
 
 // connects and reports to the master server
-function GameServerClient(websocketPort) {
+function GameServerClient(externalIP, websocketPort, password) {
     this.isConnected = false
 
+    this.ip = externalIP
     this.socket = null
     this.jsonStream = null
   
-    this.password = null
+    this.password = password
     this.connectionCallback = function() {}
     this.masterServer = {
         ip: null,
         port: null
     }
 
-    this.websocketPort = websocketPort 
+    this.websocketPort = websocketPort
 }
 
-GameServerClient.prototype.connect = function(port, ip, password, callback) {
+GameServerClient.prototype.connect = function(masterPort, masterIP, callback) {
     // store all of the connection information
     // this information will be used to reconnect if the connection is ever lost
-    this.masterServer.port = port
-    this.masterServer.ip = ip
-    this.password = password
+    this.masterServer.port = masterPort
+    this.masterServer.ip = masterIP
     this.connectionCallback = callback
 
 
@@ -52,7 +52,6 @@ GameServerClient.prototype.connect = function(port, ip, password, callback) {
             self.connect(
                 self.masterServer.port,
                 self.masterServer.ip, 
-                self.password, 
                 self.connectionCallback
             )
         }, 5000)
@@ -64,17 +63,19 @@ GameServerClient.prototype.connect = function(port, ip, password, callback) {
         self.socket.unref()
     })
 
-    this.socket.connect(port, ip, function() {
+    this.socket.connect(masterPort, masterIP, function() {
         self.send({
-            password: password,
+            password: self.password,
+            externalIP: self.ip,
             port: self.websocketPort
         })
         self.isConnected = true
-        console.log('Connected to MasterServer', ip + ':' + port)
+        console.log('Connected to MasterServer', masterIP+ ':' + masterPort)
     })
 }
 
 GameServerClient.prototype.send = function(message) {
+    // delimiting json messages with \n is a requirement of JSONStream
     this.socket.write(JSON.stringify(message) + '\n')
 }
 
