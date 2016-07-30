@@ -4,7 +4,7 @@ A master server that maintains a list of active game servers. GameServerClient.j
 ## Running the example
 1. Run exampleMaster.js, this is a master server.
 2. Run one or more instances of exampleClient.js, these will connect to the master server.
-3. Visit http://localhost:8080/ to see the listing of all the hypothetical game servers.
+3. Visit http://localhost:8081/servers to see the listing of all the (somewhat fake) game servers.
 
 The webpage at the above url will have information about the address and player count of the game servers. Servers can be added, removed, or changed, and refreshing the webapge will show these changes.
 
