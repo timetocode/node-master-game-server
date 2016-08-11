@@ -5,6 +5,7 @@
   "description": "master server example",
   "dependencies": {
       "express": "4.14.0",
-      "public-ip": "2.0.1"
+      "public-ip": "2.0.1",
+      "json-stream": "1.0.0"
   }
 }
