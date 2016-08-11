@@ -16,11 +16,9 @@ The data sent from the client to the master in the example begins with an ip and
 Here is the full relationship between the parts that I currently use:
 
 
-MasterServer - runs code very similar to exampleMaster.js
-
-GameServer - runs a whole websocket game, also uses code very siumilar to exampleClient to list this game server with the master
-
-GameClient - an HTML5 game, made in webgl and websockets
+1. MasterServer - runs code very similar to exampleMaster.js
+2. GameServer - runs a whole websocket game, also uses code very similar to exampleClient to list this game server with the master
+3. GameClient - an HTML5 game, made in webgl and websockets
 
 
 I begin by turning on the master server. I then run numerous game servers all open on different ports. These become listed by the master server.
