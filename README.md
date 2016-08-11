@@ -2,13 +2,24 @@
 A master server that maintains a list of active game servers. GameServerClient.js is a component that game servers can use to list themselves with the master server.
 
 ## Running the example
-1. Run exampleMaster.js, this is a master server.
-2. Run one or more instances of exampleClient.js, these will connect to the master server.
-3. Visit http://localhost:8081/servers to see the listing of all the (somewhat fake) game servers.
+0. npm install
+1. node exampleMaster.js // runs the master server
+2. node exampleClient.js // runs a client, open as many as you want
+3. visit in your browser: [http://localhost:8081/servers](http://localhost:8081/servers) to see the json api reporting the connected clients 
 
-The webpage at the above url will have information about the address and player count of the game servers. Servers can be added, removed, or changed, and refreshing the webapge will show these changes.
+The webpage at the above url will have information about the address and player count of the game servers. Servers can be added, removed, or changed, and refreshing the webpage will show these changes.
 
-## Real useage
-I have a multiplayer HTML5 game (uses websockets) for which I host multiple servers. One server is the MasterServer. The other servers are individual game servers. These individual game servers use the GameServerClient to register themselves with the MasterServer. The most important information about my game servers is the address at which they accept websocket connections (ip and port). The HTML5 game client can thus get a list of these addresses from MasterServer and connect to any game server.
+## Real use
+The data sent from the client to the master in the example begins with an ip and port. These aren't used in the example, and are only data. In the real world, this ip and port sent to the master should be useable to connect a game. This gets confusing as there are numerous client-server relationships. 
+
+Here is the full relationship between the parts that I currently use:
+
+MasterServer - runs code very similar to exampleMaster.js
+GameServer - runs a whole websocket game, also uses code very siumilar to exampleClient to list this game server with the master
+GameClient - an HTML5 game, made in webgl and websockets
+
+I begin by turning on the master server. I then run numerous game servers all open on different ports. These become listed by the master server.
+
+The GameClient contains a server browser, which makes a call to the http://localhost:8081/servers api. The user can then select one of these servers from the list, and hit connect. The GameClient then connects to the chosen GameServer and the game begins.
 
 
